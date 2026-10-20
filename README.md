@@ -1,29 +1,32 @@
 <p align="center">
-  <img src="assets/logo.svg" width="128" alt="Logo do to-notch">
+  <img src="assets/logo.svg" width="128" alt="to-notch logo">
 </p>
 
 <h1 align="center">to-notch</h1>
 
-<p align="center">Uma lista de tarefas que vive no notch do MacBook.</p>
+<p align="center">A to-do list that lives in your MacBook's notch.</p>
 
-## O que faz
+## What it does
 
-- **Passe o mouse no notch** para ver a próxima tarefa pendente; **clique** para abrir a lista completa. Tire o mouse e ele se recolhe.
-- **Adicione** tarefas no campo "Nova tarefa…" (Enter), **marque** como feita no círculo e **remova** no ×.
-- **Clique no título** para editar o título e adicionar uma descrição.
-- **Arraste pela alça** (☰) para reordenar, com prévia animada de onde a tarefa vai cair.
-- Uma **barra de progresso verde** logo abaixo do notch mostra quanto já foi feito.
-- Sem ícone no Dock e, instalado como app, **abre junto com o sistema**.
-- Em telas sem notch (monitor externo), usa uma faixa no centro da barra de menus.
+- **Hover over the notch** to see the next pending task; **click** to open the full list. Move the mouse away and it collapses.
+- **Add** tasks in the "Nova tarefa…" field (Enter), **check them off** with the circle, and **remove** them with the ×.
+- **Click a title** to edit it and add a description.
+- **Drag by the handle** (☰) to reorder, with an animated preview of where the task will land.
+- A **progress bar** right below the notch shows how much is done.
+- **Settings** (gear icon): progress bar color (including an animated RGB option), launch at login, clear completed tasks, delete all tasks, and quit.
+- No Dock icon and, when installed as an app, **launches at login**.
+- On screens without a notch (external monitors), it uses a strip in the center of the menu bar.
 
-As tarefas ficam salvas em `~/Library/Application Support/to-notch/todos.json`.
+Tasks are saved to `~/Library/Application Support/to-notch/todos.json`.
 
-## Requisitos
+> The interface is currently in Portuguese (pt-BR).
 
-- macOS 14 (Sonoma) ou mais recente
-- Swift 6 — Xcode ou as Command Line Tools (`xcode-select --install`)
+## Requirements
 
-## Instalação
+- macOS 14 (Sonoma) or later
+- Swift 6 — Xcode or the Command Line Tools (`xcode-select --install`)
+
+## Installation
 
 ```sh
 git clone https://github.com/carlosh-dev/to-notch.git
@@ -31,40 +34,40 @@ cd to-notch
 ./install.sh
 ```
 
-O `install.sh` compila em modo release, empacota o `to-notch.app` (assinatura ad-hoc, para uso local), instala em `/Applications` e abre o app. Rode de novo para atualizar.
+`install.sh` builds in release mode, packages `to-notch.app` (ad-hoc signed, for local use), installs it to `/Applications`, and opens it. Run it again to update.
 
-Na primeira execução o app se registra como item de início. Para desligar: **Ajustes do Sistema › Geral › Itens de Início**.
+On first launch the app registers itself as a login item. To turn that off: **System Settings › General › Login Items**, or use the toggle in the app's settings.
 
 ### Via .dmg
 
 ```sh
-./install.sh dmg   # gera .build/to-notch.dmg
+./install.sh dmg   # creates .build/to-notch.dmg
 ```
 
-Abra o `.dmg` e arraste o `to-notch` para **Aplicativos**.
+Open the `.dmg` and drag `to-notch` into **Applications**.
 
-No Mac onde foi gerado, abre direto. Em outro Mac, a assinatura ad-hoc faz o Gatekeeper bloquear: libere em **Ajustes do Sistema › Privacidade e Segurança › Abrir Mesmo Assim**, ou rode `xattr -dr com.apple.quarantine /Applications/to-notch.app`.
+On the Mac where it was built, it opens right away. On another Mac, the ad-hoc signature makes Gatekeeper block it: allow it in **System Settings › Privacy & Security › Open Anyway**, or run `xattr -dr com.apple.quarantine /Applications/to-notch.app`.
 
-Para distribuir sem esse aviso é preciso um certificado Developer ID (Apple Developer Program) e notarização:
+To distribute without that warning you need a Developer ID certificate (Apple Developer Program) and notarization:
 
 ```sh
-xcrun notarytool store-credentials to-notch   # uma vez: Apple ID, Team ID e senha de app
-SIGN_ID="Developer ID Application: Seu Nome (TEAMID)" NOTARY_PROFILE=to-notch ./install.sh dmg
+xcrun notarytool store-credentials to-notch   # once: Apple ID, Team ID and app-specific password
+SIGN_ID="Developer ID Application: Your Name (TEAMID)" NOTARY_PROFILE=to-notch ./install.sh dmg
 ```
 
-## Desenvolvimento
+## Development
 
 ```sh
-swift run    # roda direto, sem empacotar (não registra item de início)
-swift test   # testes
+swift run    # runs directly, without packaging (doesn't register a login item)
+swift test   # tests
 ```
 
-## Desinstalar
+## Uninstall
 
 ```sh
 pkill -x to-notch
 rm -rf /Applications/to-notch.app
-rm -rf ~/Library/Application\ Support/to-notch   # opcional: apaga as tarefas
+rm -rf ~/Library/Application\ Support/to-notch   # optional: deletes your tasks
 ```
 
-Se ele continuar listado em Itens de Início, remova por lá.
+If it's still listed under Login Items, remove it there.
