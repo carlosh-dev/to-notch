@@ -31,6 +31,7 @@ final class NotchPanel: NSPanel {
     private let state = NotchState()
     private var notch = NSRect.zero
     private var collapseTask: Task<Void, Never>?
+    private var hoverArea: NSTrackingArea?
 
     init(store: TodoStore) {
         super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
@@ -47,8 +48,9 @@ final class NotchPanel: NSPanel {
         host.sizingOptions = []
         host.autoresizingMask = [.width, .height]
         container.addSubview(host)
-        container.addTrackingArea(NSTrackingArea(
-            rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+        let area = NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self)
+        container.addTrackingArea(area)
+        hoverArea = area
         contentView = container
 
         reposition()
@@ -84,7 +86,10 @@ final class NotchPanel: NSPanel {
         setFrame(rect(for: mode), display: true, animate: true)
     }
 
+    // Enter/exit de tracking areas internas (onHover, TextField, scroller) sobem pela cadeia de responders
+    // até o painel; só a nossa área conta, senão sair da alça fecha o painel com o mouse em cima.
     override func mouseEntered(with event: NSEvent) {
+        guard event.trackingArea === hoverArea else { return }
         collapseTask?.cancel()
         if state.mode == .collapsed { setMode(.peek) }
     }
@@ -95,10 +100,13 @@ final class NotchPanel: NSPanel {
             setMode(.expanded)
             return
         }
+        // Painel não-key descarta o 1º clique (só o usa para virar key) e o botão não dispara.
+        if event.type == .leftMouseDown, !isKeyWindow { makeKey() }
         super.sendEvent(event)
     }
 
     override func mouseExited(with event: NSEvent) {
+        guard event.trackingArea === hoverArea else { return }
         // Pequeno atraso para não piscar quando o mouse passa raspando pela borda.
         collapseTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(250))

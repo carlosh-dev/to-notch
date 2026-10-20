@@ -29,11 +29,19 @@ import Testing
     store.toggle(store.todos[0])
     #expect(store.progress == 0.5)
     #expect(store.firstPending?.title == "revisar PR")
+    store.move(from: [1], to: 0)
+    #expect(store.todos.map(\.title) == ["revisar PR", "comprar café"])
+    store.move(from: [0], to: 2)
     store.remove(store.todos[1])
     #expect(store.progress == 1)
     #expect(store.firstPending == nil)
 
+    store.update(store.todos[0], title: "  ", notes: " moído fino ")
+    #expect(store.todos[0].title == "comprar café")
+    #expect(store.todos[0].notes == "moído fino")
+
     let reloaded = TodoStore(url: url)
     #expect(reloaded.todos.map(\.title) == ["comprar café"])
     #expect(reloaded.todos[0].done)
+    #expect(reloaded.todos[0].notes == "moído fino")
 }

@@ -1,9 +1,11 @@
 import Foundation
 import Observation
+import SwiftUI // move(fromOffsets:toOffset:)
 
 struct Todo: Codable, Identifiable, Equatable {
     var id = UUID()
     var title: String
+    var notes: String? // opcional: JSON antigo não tem a chave
     var done = false
 }
 
@@ -44,8 +46,23 @@ final class TodoStore {
         save()
     }
 
+    /// Título vazio mantém o anterior.
+    func update(_ todo: Todo, title: String, notes: String) {
+        guard let i = todos.firstIndex(where: { $0.id == todo.id }) else { return }
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !title.isEmpty { todos[i].title = title }
+        let notes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        todos[i].notes = notes.isEmpty ? nil : notes
+        save()
+    }
+
     func remove(_ todo: Todo) {
         todos.removeAll { $0.id == todo.id }
+        save()
+    }
+
+    func move(from source: IndexSet, to destination: Int) {
+        todos.move(fromOffsets: source, toOffset: destination)
         save()
     }
 
