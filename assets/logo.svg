@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c2c2e"/>
+      <stop offset="1" stop-color="#121214"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
+  <!-- notch -->
+  <path d="M64 0H192V26A16 16 0 0 1 176 42H80A16 16 0 0 1 64 26Z" fill="#000"/>
+  <!-- barra de progresso sob o notch -->
+  <rect x="80" y="52" width="96" height="6" rx="3" fill="#fff" fill-opacity=".15"/>
+  <rect x="80" y="52" width="60" height="6" rx="3" fill="#34c759"/>
+  <!-- tarefa feita -->
+  <circle cx="128" cy="154" r="52" fill="none" stroke="#34c759" stroke-width="12"/>
+  <path d="M103 155L121 173L155 137" fill="none" stroke="#34c759" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
