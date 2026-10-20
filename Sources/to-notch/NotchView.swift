@@ -10,6 +10,8 @@ struct NotchView: View {
     @State private var editing: Todo?
     @State private var editTitle = ""
     @State private var editNotes = ""
+    @State private var showSettings = false
+    @AppStorage("barColor") private var barColor = "green"
 
     var body: some View {
         let radius: CGFloat = state.mode == .collapsed ? 10 : 20
@@ -19,7 +21,15 @@ struct NotchView: View {
             case .collapsed: EmptyView()
             case .peek: peek.transition(.opacity)
             case .expanded:
-                if let todo = editing { editor(todo).transition(.opacity) } else { content.transition(.opacity) }
+                if let todo = editing { editor(todo).transition(.opacity) }
+                else if showSettings {
+                    SettingsView(store: store) { showSettings = false }
+                        .padding(.horizontal, 20)
+                        .padding(.top, state.notchHeight + 8)
+                        .padding(.bottom, 14)
+                        .transition(.opacity)
+                }
+                else { content.transition(.opacity) }
             }
             if !store.todos.isEmpty { progressBar }
         }
@@ -33,10 +43,24 @@ struct NotchView: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 Color.white.opacity(0.15)
-                Color.green.frame(width: geo.size.width * store.progress)
+                barFill.frame(width: geo.size.width * store.progress)
             }
         }
         .frame(height: barHeight)
+    }
+
+    @ViewBuilder private var barFill: some View {
+        if barColor == "rgb" {
+            // ponytail: redesenha a 30fps enquanto visível; baixar o intervalo se o consumo de CPU incomodar
+            TimelineView(.animation(minimumInterval: 1 / 30)) { ctx in
+                let t = ctx.date.timeIntervalSinceReferenceDate / 3
+                LinearGradient(
+                    colors: (0...6).map { Color(hue: (Double($0) / 6 + t).truncatingRemainder(dividingBy: 1), saturation: 1, brightness: 1) },
+                    startPoint: .leading, endPoint: .trailing)
+            }
+        } else {
+            barColors.first { $0.id == barColor }?.color ?? .green
+        }
     }
 
     private var peek: some View {
@@ -72,10 +96,9 @@ struct NotchView: View {
                         store.add(draft)
                         draft = ""
                     }
-                Button { NSApp.terminate(nil) } label: { Image(systemName: "power") }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
-                    .help("Sair")
+                Button { showSettings = true } label: { Image(systemName: "gearshape") }
+                    .buttonStyle(PanelIconButtonStyle())
+                    .help("Configurações")
             }
         }
         .padding(.horizontal, 20)
@@ -157,11 +180,8 @@ struct NotchView: View {
                 Image(systemName: "text.alignleft").font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
-            Button { store.remove(todo) } label: {
-                Image(systemName: "xmark").padding(4).contentShape(Rectangle())
-            }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
+            Button { store.remove(todo) } label: { Image(systemName: "xmark") }
+                .buttonStyle(PanelIconButtonStyle())
                 .help("Remover")
         }
     }
@@ -184,11 +204,13 @@ struct NotchView: View {
             HStack {
                 Spacer()
                 Button("Cancelar") { editing = nil }
+                    .buttonStyle(PanelButtonStyle())
                     .keyboardShortcut(.cancelAction)
                 Button("Salvar") {
                     store.update(todo, title: editTitle, notes: editNotes)
                     editing = nil
                 }
+                .buttonStyle(PanelButtonStyle(role: .prominent))
                 .keyboardShortcut(.defaultAction)
             }
         }
