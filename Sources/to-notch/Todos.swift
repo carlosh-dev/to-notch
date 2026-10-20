@@ -61,6 +61,16 @@ final class TodoStore {
         save()
     }
 
+    func clearDone() {
+        todos.removeAll(where: \.done)
+        save()
+    }
+
+    func removeAll() {
+        todos = []
+        save()
+    }
+
     func move(from source: IndexSet, to destination: Int) {
         todos.move(fromOffsets: source, toOffset: destination)
         save()

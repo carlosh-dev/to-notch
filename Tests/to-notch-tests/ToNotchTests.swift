@@ -44,4 +44,10 @@ import Testing
     #expect(reloaded.todos.map(\.title) == ["comprar café"])
     #expect(reloaded.todos[0].done)
     #expect(reloaded.todos[0].notes == "moído fino")
+
+    reloaded.add("pendente")
+    reloaded.clearDone()
+    #expect(reloaded.todos.map(\.title) == ["pendente"])
+    reloaded.removeAll()
+    #expect(TodoStore(url: url).todos.isEmpty)
 }
