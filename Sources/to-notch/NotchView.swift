@@ -46,7 +46,7 @@ struct NotchView: View {
     private var progressBar: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Color.white.opacity(0.15)
+                barFill.opacity(0.3)
                 barFill.frame(width: geo.size.width * store.progress)
             }
         }
