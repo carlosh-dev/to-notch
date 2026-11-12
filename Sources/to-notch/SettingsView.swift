@@ -52,7 +52,7 @@ struct SettingsView: View {
                         .disabled(!store.todos.contains(where: \.done))
                 }
                 Divider()
-                row("Todas as tarefas") {
+                row("Todas desta aba") {
                     Button(confirmDelete ? "Apagar \(store.todos.count)?" : "Apagar") {
                         if confirmDelete { store.removeAll() }
                         confirmDelete.toggle()

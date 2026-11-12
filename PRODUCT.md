@@ -26,6 +26,7 @@ Dois pilares com o mesmo peso:
 - Dados em `~/Library/Application Support/to-notch/todos.json`; preferências em UserDefaults.
 
 ## Capabilities and Constraints
+- Abas no topo do painel, cada uma com sua lista (criar, renomear, apagar). Peek e barra de progresso seguem a aba selecionada.
 - Adicionar, marcar, remover, editar (título + descrição) e reordenar tarefas arrastando.
 - Configurações no próprio painel: cor da barra de progresso (paleta fixa + RGB animado), abrir ao iniciar, limpar concluídas, apagar todas, sair.
 - **Lista simples:** sem datas, prioridades, tags ou sincronização. Continua sendo uma lista curta.

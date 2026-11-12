@@ -11,6 +11,10 @@ struct NotchView: View {
     @State private var editTitle = ""
     @State private var editNotes = ""
     @State private var showSettings = false
+    @State private var renaming: TodoList.ID?
+    @State private var renameDraft = ""
+    @State private var confirmRemove: TodoList.ID?
+    @FocusState private var renameFocused: Bool
     @AppStorage("barColor") private var barColor = "green"
 
     var body: some View {
@@ -80,6 +84,7 @@ struct NotchView: View {
 
     private var content: some View {
         VStack(alignment: .leading, spacing: 10) {
+            tabs
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
                     if store.todos.isEmpty {
@@ -104,6 +109,79 @@ struct NotchView: View {
         .padding(.horizontal, 20)
         .padding(.top, state.notchHeight + 8)
         .padding(.bottom, 14)
+    }
+
+    private var tabs: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 4) {
+                ForEach(Array(store.lists.enumerated()), id: \.element.id) { tab($0.element, at: $0.offset) }
+                Button { store.addList() } label: { Image(systemName: "plus") }
+                    .buttonStyle(PanelIconButtonStyle())
+                    .help("Nova aba")
+            }
+        }
+        .animation(.easeOut(duration: 0.15), value: confirmRemove)
+        .task(id: confirmRemove) { // confirmação expira sozinha, como em Configurações
+            guard confirmRemove != nil else { return }
+            try? await Task.sleep(for: .seconds(3))
+            confirmRemove = nil
+        }
+    }
+
+    // Clicar na aba já selecionada renomeia; o × só aparece nela e pede confirmação se houver tarefas.
+    @ViewBuilder private func tab(_ list: TodoList, at i: Int) -> some View {
+        let isSelected = store.selected == i
+        let canRemove = isSelected && store.lists.count > 1 && renaming != list.id
+        HStack(spacing: 2) {
+            if renaming == list.id {
+                TextField("Nome", text: $renameDraft)
+                    .textFieldStyle(.plain)
+                    .focused($renameFocused)
+                    .fixedSize()
+                    .onSubmit { commitRename(at: i) }
+                    .onChange(of: renameFocused) { _, focused in if !focused { commitRename(at: i) } }
+            } else {
+                Text(list.name)
+                    .lineLimit(1)
+                    .foregroundStyle(isSelected ? .primary : .secondary)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if isSelected {
+                            renameDraft = list.name
+                            renaming = list.id
+                            renameFocused = true
+                        } else {
+                            renaming = nil
+                            confirmRemove = nil
+                            store.selected = i
+                        }
+                    }
+                    .help(isSelected ? "Clique para renomear" : list.name)
+            }
+            if canRemove {
+                if confirmRemove == list.id {
+                    Button("Apagar \(list.todos.count)?") { store.removeList(at: i); confirmRemove = nil }
+                        .buttonStyle(PanelButtonStyle(role: .destructive))
+                } else {
+                    Button {
+                        if list.todos.isEmpty { store.removeList(at: i) } else { confirmRemove = list.id }
+                    } label: { Image(systemName: "xmark").font(.caption2) }
+                        .buttonStyle(PanelIconButtonStyle())
+                        .help("Apagar aba")
+                }
+            }
+        }
+        .font(.callout.weight(.medium))
+        .padding(.leading, 10)
+        .padding(.trailing, canRemove ? 2 : 10)
+        .frame(height: 24)
+        .background(.white.opacity(isSelected ? 0.12 : 0), in: Capsule())
+    }
+
+    private func commitRename(at i: Int) {
+        guard renaming != nil else { return }
+        store.renameList(at: i, to: renameDraft)
+        renaming = nil
     }
 
     // Arrasto em SwiftUI puro: o onMove da List depende de NSDraggingSession, que não inicia neste painel não-ativante.

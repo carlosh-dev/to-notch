@@ -51,3 +51,34 @@ import Testing
     reloaded.removeAll()
     #expect(TodoStore(url: url).todos.isEmpty)
 }
+
+@MainActor @Test func storeTabs() throws {
+    let url = FileManager.default.temporaryDirectory.appending(path: "tonotch-\(UUID())/todos.json")
+    defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+
+    // Formato antigo ([Todo]) vira uma aba só.
+    try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try JSONEncoder().encode([Todo(title: "antiga")]).write(to: url)
+    let store = TodoStore(url: url)
+    #expect(store.lists.map(\.name) == ["Tarefas"])
+    #expect(store.todos.map(\.title) == ["antiga"])
+
+    store.addList()
+    #expect(store.selected == 1)
+    #expect(store.todos.isEmpty)
+    store.add("nova")
+    store.renameList(at: 1, to: "  Casa ")
+    store.renameList(at: 1, to: "  ") // ignorado
+    store.selected = 0
+    #expect(store.todos.map(\.title) == ["antiga"])
+
+    let reloaded = TodoStore(url: url)
+    #expect(reloaded.lists.map(\.name) == ["Tarefas", "Casa"])
+    #expect(reloaded.lists[1].todos.map(\.title) == ["nova"])
+
+    reloaded.selected = 1
+    reloaded.removeList(at: 1)
+    #expect(reloaded.selected == 0)
+    reloaded.removeList(at: 0) // última aba fica
+    #expect(reloaded.lists.count == 1)
+}

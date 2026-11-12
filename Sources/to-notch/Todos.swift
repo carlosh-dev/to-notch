@@ -9,10 +9,23 @@ struct Todo: Codable, Identifiable, Equatable {
     var done = false
 }
 
+struct TodoList: Codable, Identifiable, Equatable {
+    var id = UUID()
+    var name: String
+    var todos: [Todo] = []
+}
+
+/// Uma lista por aba; `todos` e as operações de tarefa agem na aba selecionada.
 @MainActor @Observable
 final class TodoStore {
-    private(set) var todos: [Todo] = []
+    private(set) var lists = [TodoList(name: "Tarefas")]
+    var selected = 0
     private let url: URL
+
+    private(set) var todos: [Todo] {
+        get { lists[selected].todos }
+        set { lists[selected].todos = newValue }
+    }
 
     nonisolated static let defaultURL = URL.applicationSupportDirectory.appending(path: "to-notch/todos.json")
 
@@ -20,7 +33,12 @@ final class TodoStore {
         self.url = url
         guard let data = try? Data(contentsOf: url) else { return }
         do {
-            todos = try JSONDecoder().decode([Todo].self, from: data)
+            let decoder = JSONDecoder()
+            if let lists = try? decoder.decode([TodoList].self, from: data) {
+                if !lists.isEmpty { self.lists = lists }
+            } else {
+                todos = try decoder.decode([Todo].self, from: data) // formato antigo: uma lista só
+            }
         } catch {
             // Não sobrescrever um arquivo ilegível no próximo save: guarda uma cópia.
             try? FileManager.default.moveItem(at: url, to: url.appendingPathExtension("corrupt"))
@@ -71,6 +89,28 @@ final class TodoStore {
         save()
     }
 
+    func addList() {
+        lists.append(TodoList(name: "Lista \(lists.count + 1)"))
+        selected = lists.count - 1
+        save()
+    }
+
+    /// Nome vazio mantém o anterior.
+    func renameList(at i: Int, to name: String) {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard lists.indices.contains(i), !name.isEmpty else { return }
+        lists[i].name = name
+        save()
+    }
+
+    /// Sempre sobra pelo menos uma aba.
+    func removeList(at i: Int) {
+        guard lists.count > 1, lists.indices.contains(i) else { return }
+        lists.remove(at: i)
+        if selected >= i, selected > 0 { selected -= 1 }
+        save()
+    }
+
     func move(from source: IndexSet, to destination: Int) {
         todos.move(fromOffsets: source, toOffset: destination)
         save()
@@ -79,7 +119,7 @@ final class TodoStore {
     private func save() {
         do {
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try JSONEncoder().encode(todos).write(to: url, options: .atomic)
+            try JSONEncoder().encode(lists).write(to: url, options: .atomic)
         } catch {
             NSLog("to-notch: falha ao salvar todos: \(error)")
         }

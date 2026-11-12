@@ -8,12 +8,13 @@
 
 ## What it does
 
+- **Tabs** at the top, each with its own list: **+** adds one, click the selected tab to rename it, and × deletes it (asks to confirm if it has tasks).
 - **Hover over the notch** to see the next pending task; **click** to open the full list. Move the mouse away and it collapses.
 - **Add** tasks in the "Nova tarefa…" field (Enter), **check them off** with the circle, and **remove** them with the ×.
 - **Click a title** to edit it and add a description.
 - **Drag by the handle** (☰) to reorder, with an animated preview of where the task will land.
 - A **progress bar** right below the notch shows how much is done.
-- **Settings** (gear icon): progress bar color (including an animated RGB option), launch at login, clear completed tasks, delete all tasks, and quit.
+- **Settings** (gear icon): progress bar color (including an animated RGB option), launch at login, clear completed tasks, delete all tasks in the current tab, and quit.
 - No Dock icon and, when installed as an app, **launches at login**.
 - On screens without a notch (external monitors), it uses a strip in the center of the menu bar.
 
